@@ -7,9 +7,13 @@ inputs:
   recursive:
     default: true
   with-decryption:
-    default: true
-  region:
-    default: 'us-east-1'
+    default: false
+  split-env:
+    default: false
+  upper-case:
+    default: false
+  env-prefix:
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
