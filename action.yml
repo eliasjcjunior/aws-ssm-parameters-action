@@ -1,5 +1,6 @@
-name: 'aws-ssm-parameters'
+name: 'aws-ssm-parameters-action'
 description: 'load ssm parameters from aws ssm'
+author: 'Elias Júnior'
 inputs:
   paths:
     required: true
