@@ -13,22 +13,31 @@ const parsePathsInput = paths => {
   }
 }
 
+const isTrue = (value) => value === 'true' ? true : false;
+
 const configureInputs = () => {
   const inputPaths = core.getInput('paths');
   const inputRecursive = core.getInput('recursive');
-  const inputRegion = core.getInput('region');
   const inputOutputType = core.getInput('output-type');
   const inputWithDecryption = core.getInput('with-decryption');
-  config.region = inputRegion;
+  const inputSplitEnv = core.getInput('split-env');
+  const inputUpperCase = core.getInput('upper-case');
+  const inputEnvPrefix = core.getInput('env-prefix');
+
   return {
     paths: parsePathsInput(inputPaths),
-    recursive: inputRecursive === 'true' ? true : false,
-    withDecryption: inputWithDecryption === 'true' ? true : false,
-    outputType: inputOutputType
+    recursive: isTrue(inputRecursive),
+    withDecryption: isTrue(inputWithDecryption),
+    outputType: inputOutputType,
+    envOptions: {
+      splitEnv: isTrue(inputSplitEnv),
+      upperCase: isTrue(inputUpperCase),
+      envPrefix: inputEnvPrefix
+    }
   }
 }
 
-const formatParameterName = (name, splitEnv = true, upperCase = false, envPrefix = null) => {
+const formatParameterName = (name, { splitEnv, upperCase, envPrefix }) => {
   let formatedName = name;
   if (splitEnv) {
     const splited = name.split('/');
@@ -43,12 +52,12 @@ const formatParameterName = (name, splitEnv = true, upperCase = false, envPrefix
   return formatedName;
 }
 
-const getParameter = async (path, recursive = false, withDecryption = false) => {
+const getParameter = async (path, recursive = false, withDecryption = false, envOptions) => {
   const ssm = new SSM();
   const { Parameters } = await ssm.getParametersByPath({ Path: path, Recursive: recursive, WithDecryption: withDecryption }).promise();
   const parameters = {};
   Parameters.forEach(parameter => {
-    const name = formatParameterName(parameter.Name);
+    const name = formatParameterName(parameter.Name, envOptions);
     const value = parameter.Value.trim();
 
     if (parameter.Type === 'SecureString') {
@@ -76,8 +85,8 @@ const saveOutput = (parameters, outputType) => {
 
 const run = async () => {
   try {
-    const { paths, recursive, withDecryption, outputType } = configureInputs();
-    const parameters = await Promise.all(paths.map(path => getParameter(path, recursive, withDecryption)));
+    const { paths, recursive, withDecryption, outputType, envOptions } = configureInputs();
+    const parameters = await Promise.all(paths.map(path => getParameter(path, recursive, withDecryption, envOptions)));
     const mergedParameters = parameters.reduce(reducer);
     saveOutput(mergedParameters, outputType);
   } catch (error) {
