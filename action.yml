@@ -1,12 +1,14 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'aws-ssm-parameters'
+description: 'load ssm parameters from aws ssm'
 inputs:
   paths:
-    description: 'Who to greet'
     required: true
-outputs:
-  time:
-    description: 'The time we greeted you'
+  recursive:
+    default: true
+  with-decryption:
+    default: true
+  region:
+    default: 'us-east-1'
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node12'
+  main: 'dist/index.js'
