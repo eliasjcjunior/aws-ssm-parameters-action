@@ -2,9 +2,10 @@
 
 > Parse AWS Systems Manager parameters to environment variables.
 
-## Table of Contents
+## Content
 
   * [About](#about)
+     * [Authentication](#authentication)
      * [Parameters](#parameters)
      * [Examples](#examples)
         * [Get Parameters](#get-parameters)
@@ -14,8 +15,28 @@
 
 ## About
 
-Get information from [AWS SSM parameters](https://console.aws.amazon.com/systems-manager/parameters) and 
-exports them to environmental variables.
+Get information from [AWS SSM parameters](https://console.aws.amazon.com/systems-manager/parameters) and exports them to environmental variables.
+
+<a  name="authentication"/>
+
+#### Authentication
+
+```yaml
+name: Parse SSM parameter
+
+on:
+  push
+
+jobs:
+  get-ssm-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          aws-access-key-id:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
 
 ### Parameters
 
@@ -31,6 +52,7 @@ Parameter name | Type | Required | Default Value | Description
 ### Examples
 
 <a  name="get-parameters"/>
+
 #### Get parameters
 
 ```yaml
@@ -57,6 +79,7 @@ jobs:
 ```
 
 <a  name="get-parameters-recursive"/>
+
 #### Get parameters recursive
 
 Using a example with the paths /path/to/ssm/secret_1 and /path/to/ssm/secret_2
@@ -91,6 +114,7 @@ jobs:
 ```
 
 <a  name="get-multiple-paths"/>
+
 #### Get multiple paths
 
 ```yaml
