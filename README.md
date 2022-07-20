@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: aws-ssm-to-env
-        uses: eliasjcjunior/aws-ssm-parameters-actions@main
+        uses: eliasjcjunior/aws-ssm-parameters-action@main
         with:
           paths: |
           /path/to/ssm/secret_name
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: aws-ssm-to-env
-        uses: eliasjcjunior/aws-ssm-parameters-actions@main
+        uses: eliasjcjunior/aws-ssm-parameters-action@main
         with:
           recursive: true
           split-env: true
@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: aws-ssm-to-env
-        uses: eliasjcjunior/aws-ssm-parameters-actions@main
+        uses: eliasjcjunior/aws-ssm-parameters-action@main
         with:
           split-env: true
           upper-case: true
