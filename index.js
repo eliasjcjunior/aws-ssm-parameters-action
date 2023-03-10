@@ -1,7 +1,5 @@
 const core = require('@actions/core');
-const github = require('@actions/github');
-const command = require('@actions/core/lib/command');
-const { SSM, config } = require('aws-sdk');
+const { SSM } = require('aws-sdk');
 
 const parsePathsInput = paths => {
   try {
@@ -52,21 +50,44 @@ const formatParameterName = (name, { splitEnv, upperCase, envPrefix }) => {
   return formatedName;
 }
 
-const getParameter = async (path, recursive = false, withDecryption = false, envOptions) => {
+const getParameter = async ({
+  envOptions,
+  path,
+  recursive = false,
+  withDecryption = false,
+}) => {
   const ssm = new SSM();
-  const { Parameters } = await ssm.getParametersByPath({ Path: path, Recursive: recursive, WithDecryption: withDecryption }).promise();
-  const parameters = {};
-  Parameters.forEach(parameter => {
-    const name = formatParameterName(parameter.Name, envOptions);
-    const value = parameter.Value.trim();
 
-    if (parameter.Type === 'SecureString') {
-       core.setSecret(value);
-    }
-    parameters[name] = value;
-  });
+  const parameters = {};
+
+  let nextToken = undefined;
+
+  do {
+    const { Parameters, NextToken } = await ssm
+      .getParametersByPath({
+        Path: path,
+        Recursive: recursive,
+        WithDecryption: withDecryption,
+        NextToken: nextToken,
+      })
+      .promise();
+
+    Parameters.forEach((parameter) => {
+      const name = formatParameterName(parameter.Name, envOptions);
+      const value = parameter.Value.trim();
+
+      if (parameter.Type === "SecureString") {
+        core.setSecret(value);
+      }
+
+      parameters[name] = value;
+    });
+
+    nextToken = NextToken;
+  } while (Boolean(nextToken));
+
   return parameters;
-}
+};
 
 const reducer = (oldValue, newValue) => Object.assign(oldValue, newValue);
 
@@ -86,7 +107,7 @@ const saveOutput = (parameters, outputType) => {
 const run = async () => {
   try {
     const { paths, recursive, withDecryption, outputType, envOptions } = configureInputs();
-    const parameters = await Promise.all(paths.map(path => getParameter(path, recursive, withDecryption, envOptions)));
+    const parameters = await Promise.all(paths.map(path => getParameter({ path, recursive, withDecryption, envOptions })));
     const mergedParameters = parameters.reduce(reducer);
     saveOutput(mergedParameters, outputType);
   } catch (error) {
