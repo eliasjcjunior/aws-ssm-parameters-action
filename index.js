@@ -40,6 +40,11 @@ const formatParameterName = (name, { splitEnv, upperCase, envPrefix }) => {
   if (splitEnv) {
     const splited = name.split('/');
     formatedName = splited[splited.length-1];
+  } else {
+    if (formatedName.startsWith('/')) {
+      formatedName = formatedName.substring(1);
+    }
+    formatedName = formatedName.replace(/\//g, '_');
   }
   if (upperCase) {
     formatedName = formatedName.toUpperCase();
